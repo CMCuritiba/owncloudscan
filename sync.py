@@ -1,6 +1,9 @@
 import sys
 import os.path
+import os
 import pycurl
+from StringIO import StringIO
+import datetime
 
 if len(sys.argv) < 2:
     exit()
@@ -18,10 +21,22 @@ FileName = FilePathSplit[len(FilePathSplit)-1]
 
 f = open(FilePath, "r")
 
+buffer = StringIO()
+
 c = pycurl.Curl()
-c.setopt(c.URL,"https://nuvem.cmc.pr.gov.br/remote.php/webdav/scanner"+FileName)
+c.setopt(c.URL,"https://nuvem.cmc.pr.gov.br/remote.php/webdav/scanner/"+FileName)
 c.setopt(c.USERPWD,"") #Definir a conta usada
 c.setopt(c.UPLOAD,1L)
 c.setopt(c.READDATA, f)
+c.setopt(c.WRITEDATA, buffer)
 c.perform()
 c.close()
+
+f.close()
+
+if buffer.len == 0:
+    os.remove(FilePath)
+else:
+    log = open("error.log","a")
+    log.write("Erro ao enviar o arquivo "+FileName+" para o usuario "+UserName+" em "+format(datetime.datetime.now())+"\n")
+    log.close()
