@@ -1,9 +1,8 @@
 import sys
 import os.path
 import os
-import pycurl
-from StringIO import StringIO
-import datetime
+
+OwncloudRoot = "/var/www/owncloud"
 
 if len(sys.argv) < 2:
     exit()
@@ -19,24 +18,12 @@ FilePathSplit = FilePath.split('/')
 UserName = FilePathSplit[len(FilePathSplit)-2]
 FileName = FilePathSplit[len(FilePathSplit)-1]
 
-f = open(FilePath, "r")
+UserFilesRoot = OwncloudRoot + "/data/" + UserName + "/files/"
 
-buffer = StringIO()
+if not os.path.exists(UserFilesRoot+"scanner"):
+    os.system("sudo -u www-data mkdir "+UserFilesRoot+"scanner")
 
-c = pycurl.Curl()
-c.setopt(c.URL,"https://nuvem.cmc.pr.gov.br/remote.php/webdav/scanner/"+FileName)
-c.setopt(c.USERPWD,"") #Definir a conta usada
-c.setopt(c.UPLOAD,1L)
-c.setopt(c.READDATA, f)
-c.setopt(c.WRITEDATA, buffer)
-c.perform()
-c.close()
-
-f.close()
-
-if buffer.len == 0:
-    os.remove(FilePath)
-else:
-    log = open("error.log","a")
-    log.write("Erro ao enviar o arquivo "+FileName+" para o usuario "+UserName+" em "+format(datetime.datetime.now())+"\n")
-    log.close()
+os.system("cp "+FilePath+" "+UserFilesRoot+"scanner/")
+os.system("chown www-data:www-data "+UserFilesRoot+"scanner/"+FileName)
+os.system('sudo -u www-data /var/www/owncloud/occ --quiet files:scan --path="/'+UserName+'/files/scanner/'+FileName+'"')
+os.system('rm -f '+FilePath)
