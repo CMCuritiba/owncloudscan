@@ -22,8 +22,8 @@ UserFilesRoot = OwncloudRoot + "/data/" + UserName + "/files/"
 
 if not os.path.exists(UserFilesRoot+"scanner"):
     os.system("sudo -u www-data mkdir "+UserFilesRoot+"scanner")
+    os.system("sudo -u www-data "+OwncloudRoot+"/occ --quiet files:scan --path=\"/"+UserName+"/files/scanner/\"")
 
-os.system("cp "+FilePath+" "+UserFilesRoot+"scanner/")
+os.system("mv "+FilePath+" "+UserFilesRoot+"scanner/")
 os.system("chown www-data:www-data "+UserFilesRoot+"scanner/"+FileName)
-os.system('sudo -u www-data /var/www/owncloud/occ --quiet files:scan --path="/'+UserName+'/files/scanner/'+FileName+'"')
-os.system('rm -f '+FilePath)
+os.system("sudo -u www-data "+OwncloudRoot+"/occ --quiet files:scan --path=\"/"+UserName+"/files/scanner/"+FileName+"\"")
